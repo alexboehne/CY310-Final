@@ -19,14 +19,20 @@ def customer_portal(db, current_cursor, user_data, user_list):
     match selection:
         case 1:  # adds deposit to current balance and updates db
             deposit = float(input("Enter your deposit amount: "))
+            if deposit <= 0:
+                print("Error:Can not transfer negative Amount")
+                deposit = 0
             new_balance = float(user_data[3]) + deposit
-            current_cursor.execute(f'UPDATE user_db SET balance = {new_balance} WHERE uid = {user_data[0]}')
+            current_cursor.execute(f'UPDATE user_db SET balance = balance + {deposit} WHERE uid = {user_data[0]}')
             db.commit()
             print("Transaction successful!\n------------------------------------")
         case 2:  # withdraws funds from balance and updates db
             withdrawl = float(input("Enter your withdrawl amount: "))
+            if withdrawl <= 0:
+                print("Error:Can not transfer negative Amount")
+                withdrawl = 0
             new_balance = float(user_data[3]) - withdrawl
-            current_cursor.execute(f'UPDATE user_db SET balance = {new_balance} WHERE uid = {user_data[0]}')
+            current_cursor.execute(f'UPDATE user_db SET balance = balance - {withdrawl} WHERE uid = {user_data[0]}')
             db.commit()
             print("Transaction successful!\n------------------------------------")
         case 3:  # transfers funds from current user to selected user
@@ -34,11 +40,14 @@ def customer_portal(db, current_cursor, user_data, user_list):
             for transfer_row in user_list:
                 if transfer_row[1] == transfer_user:
                     transfer_funds = float(input("Enter amount of funds to transfer: "))
+                    if transfer_funds <= 0:
+                        print("Error:Can not transfer negative Amount")
+                        break
                     new_balance = float(user_data[3]) - transfer_funds
                     new_receiving_balance = float(transfer_row[3]) + transfer_funds
-                    current_cursor.execute(f'UPDATE user_db SET balance = {new_balance} WHERE uid = {user_data[0]}')
+                    current_cursor.execute(f'UPDATE user_db SET balance = balance - {transfer_funds} WHERE uid = {user_data[0]}')
                     db.commit()
-                    current_cursor.execute(f'UPDATE user_db SET balance = {new_receiving_balance} WHERE uid = {transfer_row[0]}')
+                    current_cursor.execute(f'UPDATE user_db SET balance = balance + {transfer_funds} WHERE uid = {transfer_row[0]}')
                     db.commit()
                     print("Transaction successful!\n------------------------------------")
         case 4:
@@ -50,7 +59,7 @@ def main():
             host="localhost",
             user="root",
             passwd="root",
-            database="notcashapp"
+            database='notcashapp'
         )
     except mysql.connector.Error as err: # if login fails
             print("Error connecting to SQL database; terminating program")
